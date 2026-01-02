@@ -26,11 +26,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # Step 3: Compile all Java files with UTF-8 encoding
+      # Step 3: Compile Java with UTF-8 and ShapesGE JAR
       - name: Compile Java
         run: |
           mkdir -p out
-          javac -encoding UTF-8 -d out $(Get-ChildItem -Recurse -Filter *.java | ForEach-Object { $_.FullName })
+          # Compile all Java files in src/ using ShapesGE JAR as classpath
+          javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path src | ForEach-Object { $_.FullName })
 
       # Step 4: Run SonarScanner CLI
       - name: Run SonarQube Scanner
@@ -41,4 +42,3 @@ jobs:
         with:
           extra_args: >
             -Dsonar.java.binaries=out
-
