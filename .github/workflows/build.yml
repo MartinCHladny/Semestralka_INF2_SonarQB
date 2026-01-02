@@ -30,7 +30,6 @@ jobs:
       - name: Compile Java
         run: |
           mkdir -p out
-          # Compile all Java files in src/ using ShapesGE JAR as classpath
           javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path src | ForEach-Object { $_.FullName })
 
       # Step 4: Run SonarScanner CLI
@@ -40,5 +39,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
-          extra_args: >
+          args: >
             -Dsonar.java.binaries=out
