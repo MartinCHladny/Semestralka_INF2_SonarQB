@@ -17,7 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # needed for SonarQube analysis
+          fetch-depth: 0
 
       # Step 2: Set up Java
       - name: Set up JDK 17
@@ -26,12 +26,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # Step 3: Compile all Java files
+      # Step 3: Compile all Java files with UTF-8 encoding
       - name: Compile Java
         run: |
           mkdir -p out
-          # Recursively compile all Java files into 'out'
-          javac -d out $(Get-ChildItem -Recurse -Filter *.java | ForEach-Object { $_.FullName })
+          javac -encoding UTF-8 -d out $(Get-ChildItem -Recurse -Filter *.java | ForEach-Object { $_.FullName })
 
       # Step 4: Run SonarScanner CLI
       - name: Run SonarQube Scanner
@@ -42,3 +41,4 @@ jobs:
         with:
           extra_args: >
             -Dsonar.java.binaries=out
+
