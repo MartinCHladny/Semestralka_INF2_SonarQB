@@ -7,8 +7,6 @@ public class Main {
     public static void main(String[] args) {
         R6S r6S = new R6S();
         r6S.startGame();
-        //xD
-        r6S.characterDied();
     }
 
 }
