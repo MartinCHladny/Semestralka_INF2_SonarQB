@@ -21,7 +21,6 @@ public class CombatLog {
         this.x = x;
         this.y = y;
         this.combatLog = new BlokTextu[this.combatLogLength];
-        system.out.println()
     }
 
     /**
