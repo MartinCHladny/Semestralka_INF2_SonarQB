@@ -6,6 +6,7 @@ public class PRSQTest {
     }
 
     public void doSmothing() {
+        //method body
         int cislo = 1;
         while (true) {
             if (cislo == 0) {
