@@ -11,6 +11,9 @@ public class PRSQTest {
             if (cislo == 0) {
                 return;
             }
+            if (cislo == 5) {
+                cislo = 1;
+            }
             cislo++;
         }
     }
