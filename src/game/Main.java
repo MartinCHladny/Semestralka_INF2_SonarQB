@@ -5,6 +5,8 @@ package game;
 public class Main {
 
     public static void main(String[] args) {
+        PRSQTest sq = new PRSQTest();
+        sq.doSmothing();
         R6S r6S = new R6S();
         r6S.startGame();
     }
