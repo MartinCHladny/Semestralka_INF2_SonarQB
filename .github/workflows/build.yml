@@ -43,11 +43,10 @@ jobs:
         run: |
           mkdir test-reports
           java -javaagent:libs/jacocoagent.jar=destfile=jacoco.exec `
-               -jar libs/junit-platform-console-standalone-1.10.2.jar `
+               -jar libs/junit-platform-console-standalone-1.10.2.jar execute `
                --class-path out `
                --scan-class-path `
-               --reports-dir test-reports `
-               --report-format xml
+               --reports-dir=test-reports
 
       # 6️⃣ Generate JaCoCo XML coverage report
       - name: Generate JaCoCo report
