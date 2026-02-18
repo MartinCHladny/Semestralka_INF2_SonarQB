@@ -39,10 +39,11 @@ jobs:
       - name: Compile tests
         shell: pwsh
         run: |
-          $testFiles = Get-ChildItem -Recurse -Filter *.java -Path test | ForEach-Object { "`"$_`"" } | -join ' '
-          if ($testFiles) {
-            javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar;libs/shapesGE-SK-2.0.4.jar" -d out $testFiles
+          $testFiles = (Get-ChildItem -Recurse -Filter *.java -Path test | ForEach-Object { "`"$($_.FullName)`"" })
+          if ($testFiles.Count -gt 0) {
+              javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar;libs/shapesGE-SK-2.0.4.jar" -d out $testFiles
           }
+
 
       # 5️⃣ Run tests with JaCoCo coverage
       - name: Run tests with coverage
