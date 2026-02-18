@@ -40,17 +40,17 @@ jobs:
       # 5️⃣ Run tests with JaCoCo coverage
       - name: Run tests with coverage
         run: |
-          java -javaagent:libs/jacocoagent.jar=destfile=jacoco.exec ^
-               -jar libs/junit-platform-console-standalone-1.10.2.jar ^
-               --class-path out ^
+          java -javaagent:libs/jacocoagent.jar=destfile=jacoco.exec `
+               -jar libs/junit-platform-console-standalone-1.10.2.jar `
+               --class-path out `
                --scan-class-path
 
       # 6️⃣ Generate JaCoCo XML report
       - name: Generate JaCoCo report
         run: |
-          java -jar libs/jacococli.jar report jacoco.exec ^
-               --classfiles out ^
-               --sourcefiles src ^
+          java -jar libs/jacococli.jar report jacoco.exec `
+               --classfiles out `
+               --sourcefiles src `
                --xml jacoco.xml
 
       # 7️⃣ Run SonarQube scan
