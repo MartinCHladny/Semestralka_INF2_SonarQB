@@ -9,17 +9,16 @@ import java.util.concurrent.*;
 public class PRSQTestLoopTest {
 
     @Test
-    void testInfiniteLoopSafely() {
+    void testInfiniteLoopFails() {
         PRSQTest sq = new PRSQTest();
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
         Future<?> future = executor.submit(() -> sq.doSmothing());
 
         try {
-            future.get(2, TimeUnit.SECONDS); // allow only 2 seconds
-            fail("Expected infinite loop did not occur"); // optional: fail if method ends early
+            future.get(2, TimeUnit.SECONDS); // expect method to finish quickly
         } catch (TimeoutException e) {
-            // Success! The method ran longer than allowed (infinite loop confirmed)
+            fail("Method doSmothing() is stuck in an infinite loop"); // fail if it takes too long
         } catch (Exception e) {
             fail("Unexpected exception: " + e);
         } finally {
