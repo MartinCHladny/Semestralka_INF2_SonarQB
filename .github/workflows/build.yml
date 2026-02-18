@@ -27,13 +27,16 @@ jobs:
           java-version: '17'
 
       # 3️⃣ Compile all main and test classes dynamically
-      - name: Compile main and test classes
+      - name: Compile all main and test classes
         run: |
           mkdir out
-          # Compile all main classes from src/
+          # Compile all main classes
           javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path src | % FullName)
-          # Compile all test classes from test/ including compiled main classes in classpath
-          javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path test | % FullName)
+          # Compile all test classes, include compiled main classes in classpath
+          $testFiles = Get-ChildItem -Recurse -Filter *.java -Path test | % FullName
+          if ($testFiles) {
+            javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar;libs/shapesGE-SK-2.0.4.jar" -d out $testFiles
+          }
 
       # 4️⃣ Run tests with JaCoCo coverage
       - name: Run tests with coverage
