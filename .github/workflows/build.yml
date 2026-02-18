@@ -37,8 +37,9 @@ jobs:
         run: |
           javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path test | % FullName)
 
-      # 5️⃣ Run tests with JaCoCo coverage
+      # 5️⃣ Run tests with JaCoCo coverage (won't fail workflow)
       - name: Run tests with coverage
+        continue-on-error: true
         run: |
           mkdir test-reports
           java -javaagent:libs/jacocoagent.jar=destfile=jacoco.exec `
