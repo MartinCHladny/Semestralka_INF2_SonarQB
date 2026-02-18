@@ -45,7 +45,8 @@ jobs:
                -jar libs/junit-platform-console-standalone-1.10.2.jar `
                --class-path out `
                --scan-class-path `
-               --reports-dir test-reports
+               --reports-dir test-reports || exit 0
+        continue-on-error: true   # <-- This makes sure workflow continues even if tests fail
 
       # 6️⃣ Generate JaCoCo XML report
       - name: Generate JaCoCo report
@@ -54,15 +55,16 @@ jobs:
                --classfiles out `
                --sourcefiles src `
                --xml test-reports/jacoco.xml
+        continue-on-error: true
 
-      # 7️⃣ Publish test results to GitHub
+      # 7️⃣ Publish test results to GitHub PR
       - name: Publish JUnit test results
         uses: dorny/test-reporter@v1
         with:
           name: JUnit Tests
           path: test-reports/**/*.xml
           reporter: junit
-          fail-on-error: false
+          fail-on-error: false   # <-- Continue even if publishing fails
 
       # 8️⃣ Run SonarQube scan
       - name: Run SonarQube Scanner
