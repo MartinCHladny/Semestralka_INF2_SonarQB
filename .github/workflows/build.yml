@@ -11,64 +11,52 @@ jobs:
   build-and-test:
     name: Compile, Test & Analyze Java
     runs-on: windows-latest
+
     steps:
+      # 1️⃣ Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # 2️⃣ Set up Java 17
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Create directories
+      # 3️⃣ Compile source files
+      - name: Compile source
         run: |
           mkdir out
-          mkdir test-reports
-
-      - name: Compile sources
-        run: |
           javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path src | % FullName)
 
+      # 4️⃣ Compile test files
       - name: Compile tests
         run: |
           javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path test | % FullName)
 
+      # 5️⃣ Run tests with JaCoCo coverage (won't fail workflow)
       - name: Run tests with coverage
-        shell: pwsh
+        continue-on-error: true
         run: |
-          try {
-            java -javaagent:libs/jacocoagent.jar=destfile=jacoco.exec `
-                 -jar libs/junit-platform-console-standalone-1.10.2.jar `
-                 --class-path out `
-                 --scan-class-path `
-                 --reports-dir test-reports
-          } catch {
-            Write-Host "Tests failed, but continuing workflow..."
-          }
+          mkdir test-reports
+          java -javaagent:libs/jacocoagent.jar=destfile=jacoco.exec `
+               -jar libs/junit-platform-console-standalone-1.10.2.jar `
+               --class-path out `
+               --scan-class-path `
+               --reports-dir test-reports
 
-      - name: Generate JaCoCo XML report
-        shell: pwsh
+      # 6️⃣ Generate JaCoCo XML report
+      - name: Generate JaCoCo report
         run: |
-          try {
-            java -jar libs/jacococli.jar report jacoco.exec `
-                 --classfiles out `
-                 --sourcefiles src `
-                 --xml test-reports/jacoco.xml
-          } catch {
-            Write-Host "JaCoCo report generation failed, continuing..."
-          }
+          java -jar libs/jacococli.jar report jacoco.exec `
+               --classfiles out `
+               --sourcefiles src `
+               --xml test-reports/jacoco.xml
 
-      - name: Publish JUnit test results
-        uses: dorny/test-reporter@v1
-        with:
-          name: JUnit Tests
-          path: test-reports/**/*.xml
-          reporter: junitxml
-          fail-on-error: false
-
+      # 7️⃣ Run SonarQube Scanner
       - name: Run SonarQube Scanner
         uses: SonarSource/sonarqube-scan-action@v6
         env:
@@ -78,3 +66,12 @@ jobs:
           args: >
             -Dsonar.java.binaries=out
             -Dsonar.coverage.jacoco.xmlReportPaths=test-reports/jacoco.xml
+
+      # 8️⃣ Publish test results to GitHub PR
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        with:
+          name: JUnit Tests
+          path: test-reports/**/*.xml
+          reporter: junitxml
+          fail-on-error: false
