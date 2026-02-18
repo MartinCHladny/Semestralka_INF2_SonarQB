@@ -31,13 +31,15 @@ jobs:
         shell: pwsh
         run: |
           mkdir out
-          javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out src/game/*.java src/*.java
+          $mainFiles = Get-ChildItem -Recurse -Filter *.java -Path src | ForEach-Object { $_.FullName }
+          javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out $mainFiles
 
-      # 4️⃣ Compile test classes (statically pointing to main classes)
+      # 4️⃣ Compile test classes
       - name: Compile test classes
         shell: pwsh
         run: |
-          javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar;libs/shapesGE-SK-2.0.4.jar" -d out test/PRSQTestLoopTest.java
+          $testFiles = Get-ChildItem -Recurse -Filter *.java -Path test | ForEach-Object { $_.FullName }
+          javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar;libs/shapesGE-SK-2.0.4.jar" -d out $testFiles
 
       # 5️⃣ Run tests with JaCoCo coverage
       - name: Run tests with coverage
