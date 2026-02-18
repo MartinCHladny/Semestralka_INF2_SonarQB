@@ -1,4 +1,4 @@
-name: Build, Test & SonarQube Analysis
+name: Build and SonarQube Analysis
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
 
 jobs:
   build-and-analyze:
+    name: Compile, Test & SonarQube Analysis
     runs-on: windows-latest
 
     steps:
@@ -30,33 +31,27 @@ jobs:
         shell: pwsh
         run: |
           mkdir out
-          $mainFiles = (Get-ChildItem -Recurse -Filter *.java -Path src | ForEach-Object { "`"$($_.FullName)`"" })
+          $mainFiles = Get-ChildItem -Recurse -Filter *.java -Path src | ForEach-Object { $_.FullName }
           javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out $mainFiles
 
       # 4️⃣ Compile test classes dynamically
       - name: Compile test classes
         shell: pwsh
         run: |
-          $testFiles = (Get-ChildItem -Recurse -Filter *.java -Path test | ForEach-Object { "`"$($_.FullName)`"" })
+          $testFiles = Get-ChildItem -Recurse -Filter *.java -Path test | ForEach-Object { $_.FullName }
           javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar;libs/shapesGE-SK-2.0.4.jar" -d out $testFiles
 
       # 5️⃣ Run tests with JaCoCo coverage
       - name: Run tests with coverage
         shell: pwsh
         run: |
-          java -javaagent:libs/jacocoagent.jar=destfile=jacoco.exec `
-               -jar libs/junit-platform-console-standalone-1.10.2.jar `
-               --class-path out `
-               --scan-class-path
+          java -javaagent:libs/jacocoagent.jar=destfile=jacoco.exec -cp "out;libs/junit-platform-console-standalone-1.10.2.jar;libs/shapesGE-SK-2.0.4.jar" org.junit.platform.console.ConsoleLauncher --scan-class-path
 
       # 6️⃣ Generate JaCoCo XML report
-      - name: Generate JaCoCo XML report
+      - name: Generate JaCoCo report
         shell: pwsh
         run: |
-          java -jar libs/jacococli.jar report jacoco.exec `
-               --classfiles out `
-               --sourcefiles src `
-               --xml jacoco.xml
+          java -jar libs/jacococli.jar report jacoco.exec --classfiles out --sourcefiles src --xml jacoco.xml
 
       # 7️⃣ Run SonarQube analysis
       - name: Run SonarQube Scanner
