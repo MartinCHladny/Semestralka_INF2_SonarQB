@@ -56,7 +56,18 @@ jobs:
                --sourcefiles src `
                --xml test-reports/jacoco.xml
 
-      # 7️⃣ Run SonarQube Scanner
+
+      # 7️⃣ Publish test results to GitHub PR
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: JUnit Tests
+          path: test-reports/*.xml
+          reporter: java-junit
+          fail-on-error: false
+          
+      # 8️⃣ Run SonarQube Scanner
       - name: Run SonarQube Scanner
         uses: SonarSource/sonarqube-scan-action@v6
         env:
@@ -67,11 +78,3 @@ jobs:
             -Dsonar.java.binaries=out
             -Dsonar.coverage.jacoco.xmlReportPaths=test-reports/jacoco.xml
 
-      # 8️⃣ Publish test results to GitHub PR
-      - name: Publish test results
-        uses: dorny/test-reporter@v1
-        with:
-          name: JUnit Tests
-          path: test-reports/**/*.xml
-          reporter: junitxml
-          fail-on-error: false
