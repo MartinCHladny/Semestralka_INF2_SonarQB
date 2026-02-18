@@ -1,4 +1,4 @@
-name: Build and SonarQube Analysis
+name: Build, Test & SonarQube Analysis
 
 on:
   push:
@@ -25,25 +25,20 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 3️⃣ Compile main source files
-      - name: Compile main sources
+      # 3️⃣ Compile main classes dynamically
+      - name: Compile main classes
         shell: pwsh
         run: |
           mkdir out
-          $mainFiles = Get-ChildItem -Recurse -Filter *.java -Path src | % FullName
-          if ($mainFiles) { 
-              javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out $mainFiles
-          }
+          $mainFiles = (Get-ChildItem -Recurse -Filter *.java -Path src | ForEach-Object { "`"$($_.FullName)`"" })
+          javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out $mainFiles
 
-      # 4️⃣ Compile test files
-      - name: Compile tests
+      # 4️⃣ Compile test classes dynamically
+      - name: Compile test classes
         shell: pwsh
         run: |
           $testFiles = (Get-ChildItem -Recurse -Filter *.java -Path test | ForEach-Object { "`"$($_.FullName)`"" })
-          if ($testFiles.Count -gt 0) {
-              javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar;libs/shapesGE-SK-2.0.4.jar" -d out $testFiles
-          }
-
+          javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar;libs/shapesGE-SK-2.0.4.jar" -d out $testFiles
 
       # 5️⃣ Run tests with JaCoCo coverage
       - name: Run tests with coverage
@@ -55,7 +50,7 @@ jobs:
                --scan-class-path
 
       # 6️⃣ Generate JaCoCo XML report
-      - name: Generate JaCoCo report
+      - name: Generate JaCoCo XML report
         shell: pwsh
         run: |
           java -jar libs/jacococli.jar report jacoco.exec `
@@ -63,7 +58,7 @@ jobs:
                --sourcefiles src `
                --xml jacoco.xml
 
-      # 7️⃣ Run SonarQube Scanner
+      # 7️⃣ Run SonarQube analysis
       - name: Run SonarQube Scanner
         uses: SonarSource/sonarqube-scan-action@v6
         env:
