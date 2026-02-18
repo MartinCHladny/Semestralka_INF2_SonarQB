@@ -1,17 +1,17 @@
-import org.junit.jupiter.api.Test;
-import java.time.Duration;
+package test;
 
-import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import game.PRSQTest; // <- this tells the compiler exactly where to find it
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTimeout;
+import java.time.Duration;
 
 public class PRSQTestLoopTest {
 
     @Test
-    void testDoSmothingTimeout() {
+    void testInfiniteLoopTimeout() {
         PRSQTest sq = new PRSQTest();
-
-        // Stop the method if it runs longer than 2 seconds
-        assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
-            sq.doSmothing();
-        }, "doSmothing() ran longer than expected (infinite loop detected)");
+        // Run doSmothing() but fail if it takes more than 2 seconds
+        assertTimeout(Duration.ofSeconds(2), () -> sq.doSmothing());
     }
 }
