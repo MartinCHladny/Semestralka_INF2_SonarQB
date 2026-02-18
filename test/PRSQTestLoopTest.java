@@ -1,17 +1,29 @@
 package test;
 
-import game.PRSQTest; // <- this tells the compiler exactly where to find it
+import game.PRSQTest;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import static org.junit.jupiter.api.Assertions.assertTimeout;
-import java.time.Duration;
+import java.util.concurrent.*;
 
 public class PRSQTestLoopTest {
 
     @Test
-    void testInfiniteLoopTimeout() {
+    void testInfiniteLoopSafely() {
         PRSQTest sq = new PRSQTest();
-        // Run doSmothing() but fail if it takes more than 2 seconds
-        //assertTimeout(Duration.ofSeconds(2), () -> sq.doSmothing());
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        Future<?> future = executor.submit(() -> sq.doSmothing());
+
+        try {
+            future.get(2, TimeUnit.SECONDS); // allow only 2 seconds
+            fail("Expected infinite loop did not occur"); // optional: fail if method ends early
+        } catch (TimeoutException e) {
+            // Success! The method ran longer than allowed (infinite loop confirmed)
+        } catch (Exception e) {
+            fail("Unexpected exception: " + e);
+        } finally {
+            executor.shutdownNow(); // stop the thread safely
+        }
     }
 }
