@@ -1,4 +1,4 @@
-name: Build, Test & SonarQube Analysis
+name: Build and SonarQube Analysis
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  build-test-sonar:
+  build-and-test:
     name: Compile, Test & Analyze Java
     runs-on: windows-latest
 
@@ -19,26 +19,26 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 2️⃣ Set up JDK 17
+      # 2️⃣ Set up Java 17
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: 'temurin'
           java-version: '17'
 
       # 3️⃣ Compile source files
       - name: Compile source
         run: |
           mkdir out
-          javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out (Get-ChildItem -Recurse -Filter *.java -Path src | % FullName)
+          javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path src | % FullName)
 
       # 4️⃣ Compile test files
       - name: Compile tests
         run: |
-          javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar" -d out (Get-ChildItem -Recurse -Filter *.java -Path test | % FullName)
+          javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path test | % FullName)
 
-      # 5️⃣ Run tests with JaCoCo (infinite loops handled with timeout)
-      - name: Run tests
+      # 5️⃣ Run tests with JaCoCo coverage
+      - name: Run tests with coverage
         run: |
           mkdir test-reports
           java -javaagent:libs/jacocoagent.jar=destfile=jacoco.exec `
@@ -46,7 +46,6 @@ jobs:
                --class-path out `
                --scan-class-path `
                --reports-dir test-reports
-        continue-on-error: true   # ✅ workflow continues even if a test fails
 
       # 6️⃣ Generate JaCoCo XML report
       - name: Generate JaCoCo report
@@ -54,18 +53,9 @@ jobs:
           java -jar libs/jacococli.jar report jacoco.exec `
                --classfiles out `
                --sourcefiles src `
-               --xml jacoco.xml
+               --xml test-reports/jacoco.xml
 
-      # 7️⃣ Publish test results to GitHub PR
-      - name: Publish test results
-        uses: dorny/test-reporter@v1
-        with:
-          name: JUnit Tests
-          path: test-reports/**/*.xml
-          reporter: junit
-          fail-on-error: false   # ✅ ensures workflow continues even if tests fail
-
-      # 8️⃣ Run SonarQube analysis
+      # 7️⃣ Run SonarQube Scanner
       - name: Run SonarQube Scanner
         uses: SonarSource/sonarqube-scan-action@v6
         env:
@@ -74,4 +64,13 @@ jobs:
         with:
           args: >
             -Dsonar.java.binaries=out
-            -Dsonar.coverage.jacoco.xmlReportPaths=jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths=test-reports/jacoco.xml
+
+      # 8️⃣ Publish test results to GitHub PR
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        with:
+          name: JUnit Tests
+          path: test-reports/**/*.xml
+          reporter: junitxml
+          fail-on-error: false
