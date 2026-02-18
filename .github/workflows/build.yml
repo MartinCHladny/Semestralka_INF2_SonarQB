@@ -1,4 +1,4 @@
-name: Build and SonarQube Analysis
+name: Build, Test & SonarQube Analysis
 
 on:
   push:
@@ -26,34 +26,32 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 3️⃣ Compile source files
-      - name: Compile source
+      # 3️⃣ Compile all main and test classes dynamically
+      - name: Compile main and test classes
         run: |
           mkdir out
+          # Compile all main classes from src/
           javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path src | % FullName)
-
-      # 4️⃣ Compile test files
-      - name: Compile tests
-        run: |
+          # Compile all test classes from test/ including compiled main classes in classpath
           javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path test | % FullName)
 
-      # 5️⃣ Run tests with JaCoCo coverage
+      # 4️⃣ Run tests with JaCoCo coverage
       - name: Run tests with coverage
         run: |
-          java -javaagent:libs/jacocoagent.jar=destfile=jacoco.exec `
-               -jar libs/junit-platform-console-standalone-1.10.2.jar `
-               --class-path out `
+          java -javaagent:libs/jacocoagent.jar=destfile=jacoco.exec ^
+               -jar libs/junit-platform-console-standalone-1.10.2.jar ^
+               --class-path out ^
                --scan-class-path
 
-      # 6️⃣ Generate JaCoCo XML report
+      # 5️⃣ Generate JaCoCo XML report
       - name: Generate JaCoCo report
         run: |
-          java -jar libs/jacococli.jar report jacoco.exec `
-               --classfiles out `
-               --sourcefiles src `
+          java -jar libs/jacococli.jar report jacoco.exec ^
+               --classfiles out ^
+               --sourcefiles src ^
                --xml jacoco.xml
 
-      # 7️⃣ Run SonarQube scan
+      # 6️⃣ Run SonarQube scan
       - name: Run SonarQube Scanner
         uses: SonarSource/sonarqube-scan-action@v6
         env:
