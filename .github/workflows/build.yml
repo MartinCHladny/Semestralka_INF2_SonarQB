@@ -57,36 +57,14 @@ jobs:
                --xml test-reports/jacoco.xml
 
 
-      # 7️⃣ Publish test summary to PR
-      - name: Publish test summary
+      # 7️⃣ Publish test results to PR
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
         if: always()
-        shell: pwsh
-        run: |
-          echo "## 🧪 Test Results" >> $env:GITHUB_STEP_SUMMARY
-
-          if (Test-Path test-reports) {
-              $files = Get-ChildItem test-reports/*.xml -ErrorAction SilentlyContinue
-
-              if ($files.Count -eq 0) {
-                  echo "⚠️ No test result files found." >> $env:GITHUB_STEP_SUMMARY
-              } else {
-                  foreach ($file in $files) {
-                      [xml]$xml = Get-Content $file
-                      $total = $xml.testsuite.tests
-                      $failed = $xml.testsuite.failures
-                      $skipped = $xml.testsuite.skipped
-                      $passed = $total - $failed - $skipped
-
-                      echo "### $($file.Name)" >> $env:GITHUB_STEP_SUMMARY
-                      echo "- ✅ Passed: $passed" >> $env:GITHUB_STEP_SUMMARY
-                      echo "- ❌ Failed: $failed" >> $env:GITHUB_STEP_SUMMARY
-                      echo "- ⏭ Skipped: $skipped" >> $env:GITHUB_STEP_SUMMARY
-                      echo "" >> $env:GITHUB_STEP_SUMMARY
-                  }
-              }
-          } else {
-              echo "❌ test-reports folder not found." >> $env:GITHUB_STEP_SUMMARY
-          }
+        with:
+          name: Unit Test Results
+          path: test-reports/TEST-*.xml
+          reporter: java-junit
           fail-on-error: false
           
       # 8️⃣ Run SonarQube Scanner
