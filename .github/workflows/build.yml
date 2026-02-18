@@ -9,30 +9,51 @@ on:
 
 jobs:
   build:
-    name: Compile and Analyze Java
+    name: Compile, Test & Analyze Java
     runs-on: windows-latest
-#DDD
+
     steps:
-      # Step 1: Checkout repository
+      # 1️⃣ Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # Step 2: Set up Java
+      # 2️⃣ Set up Java
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # Step 3: Compile Java with UTF-8 and ShapesGE JAR
-      - name: Compile Java
+      # 3️⃣ Compile source files
+      - name: Compile source
         run: |
-          mkdir -p out
-          javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path src | ForEach-Object { $_.FullName })
+          mkdir out
+          javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path src | % FullName)
 
-      # Step 4: Run SonarScanner CLI
+      # 4️⃣ Compile test files
+      - name: Compile tests
+        run: |
+          javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path test | % FullName)
+
+      # 5️⃣ Run tests with JaCoCo coverage
+      - name: Run tests with coverage
+        run: |
+          java -javaagent:libs/jacocoagent.jar=destfile=jacoco.exec ^
+               -jar libs/junit-platform-console-standalone-1.10.2.jar ^
+               --class-path out ^
+               --scan-class-path
+
+      # 6️⃣ Generate JaCoCo XML report
+      - name: Generate JaCoCo report
+        run: |
+          java -jar libs/jacococli.jar report jacoco.exec ^
+               --classfiles out ^
+               --sourcefiles src ^
+               --xml jacoco.xml
+
+      # 7️⃣ Run SonarQube scan
       - name: Run SonarQube Scanner
         uses: SonarSource/sonarqube-scan-action@v6
         env:
@@ -41,3 +62,4 @@ jobs:
         with:
           args: >
             -Dsonar.java.binaries=out
+            -Dsonar.coverage.jacoco.xmlReportPaths=jacoco.xml
