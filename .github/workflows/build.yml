@@ -69,6 +69,7 @@ jobs:
           path: test-reports/TEST-*.xml
           reporter: java-junit
           fail-on-error: false
+          token: ${{ secrets.CHECKS_PAT }}
 
       # 8️⃣ Run SonarQube Scanner (coverage + quality gate)
       - name: Run SonarQube Scanner
