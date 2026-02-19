@@ -48,23 +48,7 @@ jobs:
                --scan-class-path `
                --reports-dir=test-reports
       
-      # 6️⃣ Generate JaCoCo XML coverage report
-      - name: Generate JaCoCo report
-        run: |
-          java -jar libs/jacococli.jar report jacoco.exec `
-               --classfiles out `
-               --sourcefiles src `
-               --xml test-reports/jacoco.xml
-      
-      # 7️⃣ Publish test results to Pull Request (shows individual tests)
-      - name: Publish test results
-        uses: dorny/test-reporter@v1
-        if: always()
-        with:
-          name: Unit Tests
-          path: test-reports/TEST-*.xml
-          reporter: java-junit
-          fail-on-error: false
+
 
       # 8️⃣ Run SonarQube Scanner (coverage + quality gate)
       - name: Run SonarQube Scanner
