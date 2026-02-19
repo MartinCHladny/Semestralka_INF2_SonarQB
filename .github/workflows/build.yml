@@ -39,7 +39,7 @@ jobs:
         run: |
           javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar" -d out (Get-ChildItem -Recurse -Filter *.java -Path test | % FullName)
 
-      # 5️⃣ Run tests with JaCoCo coverage & generate XML reports
+      # 5️⃣ Run tests with JaCoCo coverage & generate JUnit XML reports
       - name: Run tests with coverage
         continue-on-error: true
         shell: pwsh
@@ -51,7 +51,7 @@ jobs:
                --scan-class-path `
                --reports-dir=test-reports
 
-      # 6️⃣ Generate JaCoCo XML coverage report
+      # 6️⃣ Generate JaCoCo XML coverage report (for SonarQube)
       - name: Generate JaCoCo report
         shell: pwsh
         run: |
@@ -69,7 +69,6 @@ jobs:
           path: test-reports/TEST-*.xml
           reporter: java-junit
           fail-on-error: false
-          token: ${{ secrets.CHECKS_PAT }}
 
       # 8️⃣ Run SonarQube Scanner (coverage + quality gate)
       - name: Run SonarQube Scanner
