@@ -7,18 +7,13 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-permissions:
-  contents: read
-  checks: write
-  pull-requests: write
-
 jobs:
   build-and-test:
     name: Compile, Test & Analyze Java
     runs-on: windows-latest
 
     steps:
-      # 1️⃣ Checkout repositoryy
+      # 1️⃣ Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
         with:
