@@ -8,7 +8,7 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  build:
+  build-and-test:
     name: Compile, Test & Analyze Java
     runs-on: windows-latest
 
@@ -31,12 +31,10 @@ jobs:
         run: |
           mkdir out
           javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path src | % FullName)
-      
       # 4️⃣ Compile test files
       - name: Compile tests
         run: |
           javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path test | % FullName)
-      
       # 5️⃣ Run tests with JaCoCo coverage & generate XML reports
       - name: Run tests with coverage
         continue-on-error: true
