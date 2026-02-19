@@ -28,32 +28,29 @@ jobs:
 
       # 3️⃣ Compile source files
       - name: Compile source
-        shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path out | Out-Null
-          javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out (Get-ChildItem -Recurse -Filter *.java -Path src | % FullName)
+          mkdir out
+          javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path src | % FullName)
 
       # 4️⃣ Compile test files
       - name: Compile tests
-        shell: pwsh
         run: |
-          javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar" -d out (Get-ChildItem -Recurse -Filter *.java -Path test | % FullName)
+          javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path test | % FullName)
 
-      # 5️⃣ Run tests with JaCoCo coverage & generate JUnit XML reports
+      # 5️⃣ Run tests with JaCoCo coverage & generate XML reports
       - name: Run tests with coverage
         continue-on-error: true
-        shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path test-reports | Out-Null
+          mkdir test-reports
           java -javaagent:libs/jacocoagent.jar=destfile=jacoco.exec `
-               -jar libs/junit-platform-console-standalone-1.10.2.jar execute `
+               -jar libs/junit-platform-console-standalone-1.10.2.jar `
                --class-path out `
                --scan-class-path `
-               --reports-dir=test-reports
+               --reports-dir test-reports `
+               --report-format xml
 
-      # 6️⃣ Generate JaCoCo XML coverage report (for SonarQube)
+      # 6️⃣ Generate JaCoCo XML coverage report
       - name: Generate JaCoCo report
-        shell: pwsh
         run: |
           java -jar libs/jacococli.jar report jacoco.exec `
                --classfiles out `
