@@ -25,18 +25,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-
-      # 3️⃣ Compile source files
-      - name: Compile source
-        run: |
-          mkdir out
-          javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path src | % FullName)
-      
-      # 4️⃣ Compile test files
-      - name: Compile tests
-        run: |
-          javac -encoding UTF-8 -cp "out;libs/junit-platform-console-standalone-1.10.2.jar" -d out $(Get-ChildItem -Recurse -Filter *.java -Path test | % FullName)
-      
+  
 
       
 
