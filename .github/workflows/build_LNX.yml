@@ -1,0 +1,47 @@
+name: Build and SonarQube Analysis
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  build:
+    name: Compile and Analyze Java
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Compile Java
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          # Collect all .java files under src and compile
+          find src -type f -name "*.java" > sources.txt
+          javac -encoding UTF-8 -cp "libs/shapesGE-SK-2.0.4.jar" -d out @sources.txt
+
+      - name: Run SonarQube Scanner
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.java.binaries=out
